@@ -19,7 +19,7 @@ int on_button = 6; // pin 6 push button
 void setup() {
   Serial.begin(9600);
 
-  pinMode(on_button, INPUT_PULLUP); // push button 
+  pinMode(on_button, INPUT_PULLUP); // ON_OFF push button 
 
   pinMode(MOTORLEFT[0], OUTPUT);
   pinMode(MOTORRIGHT[0], OUTPUT);
@@ -42,7 +42,7 @@ void setup() {
   while(digitalRead(on_button) == HIGH){
     delay(100);
   }
-  
+
   moveStop();
   moveForward();
 }
