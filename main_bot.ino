@@ -38,12 +38,13 @@ void setup() {
     GET_DISTANCE();
     delay(100);
   }
+  
+  moveStop();
 
   while(digitalRead(on_button) == HIGH){
     delay(100);
   }
 
-  moveStop();
   moveForward();
 }
 
