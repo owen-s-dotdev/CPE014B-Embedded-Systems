@@ -14,30 +14,41 @@ NewPing SONAR(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 int distance;
 int MOTORLEFT[2] = {2,3};
 int MOTORRIGHT[2] = {4,5};
+int on_button = 6; // pin 6 push button
 
 void setup() {
   Serial.begin(9600);
+
+  pinMode(on_button, INPUT_PULLUP); // push button 
 
   pinMode(MOTORLEFT[0], OUTPUT);
   pinMode(MOTORRIGHT[0], OUTPUT);
   
   digitalWrite(MOTORLEFT[0], LOW);
   digitalWrite(MOTORRIGHT[0], LOW);
+
   analogWrite(MOTORLEFT[1], 0);
   analogWrite(MOTORRIGHT[1], 0);
   
-pinMode(IRSensorRight, INPUT_PULLUP);
+  pinMode(IRSensorRight, INPUT_PULLUP);
   pinMode(IRSensorLeft, INPUT_PULLUP);
   delay(1000);
+
   for(int i = 0; i < 4; i++){ //get initial distance upon power up
     GET_DISTANCE();
     delay(100);
   }
+
+  while(digitalRead(on_button) == HIGH){
+    delay(100);
+  }
+  
   moveStop();
   moveForward();
 }
 
 void loop() {
+
   GET_DISTANCE();
   if(distance < 10 && distance > 0){
     PUSH();
