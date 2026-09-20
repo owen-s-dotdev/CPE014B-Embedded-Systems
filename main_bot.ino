@@ -6,8 +6,12 @@
 #define MAX_SPEED 190
 #define MAX_SPEED_OFFSET 20
 
+// Front IR Sensors
 int IRSensorRight = A0;
 int IRSensorLeft = A1;
+// Back IR Sensors (Assign to available analog/digital pins)
+int IRSensorBackRight = A2; 
+int IRSensorBackLeft = A3;  
 
 NewPing SONAR(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 
@@ -32,6 +36,8 @@ void setup() {
   
   pinMode(IRSensorRight, INPUT_PULLUP);
   pinMode(IRSensorLeft, INPUT_PULLUP);
+  pinMode(IRSensorBackRight, INPUT_PULLUP); // Initialize Back Right
+  pinMode(IRSensorBackLeft, INPUT_PULLUP);  // Initialize Back Left
   delay(1000);
 
   for(int i = 0; i < 4; i++){ //get initial distance upon power up
@@ -51,43 +57,59 @@ void setup() {
 void loop() {
 
   GET_DISTANCE();
+  
+  // 1. Attack Logic (Highest Priority)
   if(distance < 10 && distance > 0){
     PUSH();
     delay(300);
     moveStop();
     delay(50);
-//    for(int i = 0; i < 4; i++){ //get initial distance upon power up
-//    GET_DISTANCE();
-//    delay(100);
-//  }
   }
 
-  if(digitalRead(IRSensorRight)){
+  // 2. Edge Detection Logic (Properly chained with else-if)
+  if (digitalRead(IRSensorRight)) {
+      // Front right hits the line: backup and turn left
       moveStop();
       moveBackward();
       delay(300);
       turnLeft();
       delay(180);
-      //moveStop();
       moveForward();
-      //delay(50);
       
-  }if(digitalRead(IRSensorLeft)){
+  } else if (digitalRead(IRSensorLeft)) {
+      // Front left hits the line: backup and turn right
       moveStop();
       moveBackward();
       delay(300);
       turnRight();
       delay(180);
-      //moveStop();
       moveForward();
-      //delay(50);
-  }else{
-    moveForward();
+      
+  } else if (digitalRead(IRSensorBackRight)) {
+      // Back right hits the line: drive forward and turn left
+      moveStop();
+      moveForward();
+      delay(300);
+      turnLeft();
+      delay(180);
+      moveForward();
+      
+  } else if (digitalRead(IRSensorBackLeft)) {
+      // Back left hits the line: drive forward and turn right
+      moveStop();
+      moveForward();
+      delay(300);
+      turnRight();
+      delay(180);
+      moveForward();
+      
+  } else {
+      // 3. Default state if no line is detected and no enemy is close
+      moveForward();
   }
 }
 
 void moveStop(){
-  
   Serial.println("stop");
   for(int i = 0; i < 2; i++){
     digitalWrite(MOTORRIGHT[i], LOW);
@@ -96,16 +118,13 @@ void moveStop(){
 }
 
 void PUSH(){
-  //Serial.println("PUSH!!!!");
   digitalWrite(MOTORRIGHT[0], HIGH);
   digitalWrite(MOTORLEFT[0], HIGH);
   analogWrite(MOTORRIGHT[1], 0);
   analogWrite(MOTORLEFT[1], 0);
-  //delay(2000);
 }
 
 void moveForward(){
-  //Serial.println("forward");
   digitalWrite(MOTORRIGHT[0], HIGH);
   digitalWrite(MOTORLEFT[0], HIGH);
   analogWrite(MOTORRIGHT[1], 165);
@@ -113,7 +132,6 @@ void moveForward(){
 }
 
 void moveBackward(){
-  //Serial.println("back");
   digitalWrite(MOTORRIGHT[0], LOW);
   digitalWrite(MOTORLEFT[0], LOW);
   analogWrite(MOTORRIGHT[1], 180);
@@ -121,7 +139,6 @@ void moveBackward(){
 }
 
 void turnLeft(){
-  //Serial.println("left");
   digitalWrite(MOTORRIGHT[0], HIGH);
   digitalWrite(MOTORLEFT[0], LOW);
   analogWrite(MOTORRIGHT[1], 0);
@@ -129,7 +146,6 @@ void turnLeft(){
 }
 
 void turnRight(){
-  //Serial.println("right");
   digitalWrite(MOTORRIGHT[0], LOW);
   digitalWrite(MOTORLEFT[0], HIGH);
   analogWrite(MOTORRIGHT[1], 200);
